@@ -17,14 +17,21 @@ class BasicCanvasViewer {
   //-----------------------------------------------------------------------------------------------
 
   loadAndRender() {
+    //PDFJS.disableWorker = false
+    //PDFJS.disableAutoFetch = true
+    //PDFJS.disableRange = true
+
+    var pdfCanvas = <HTMLCanvasElement> document.getElementById(this.canvasElementId)
+
     var promise = PDFJS.getDocument({url: this.pdfDocumentPath}, null, null,
       this.onPdfDocumentProgress)
     promise.then((pdfDocument: PDFDocumentProxy) => {
       this.onPdfDocument(pdfDocument)
+
       var promise = pdfDocument.getPage(this.pdfPageNumber)
       promise.then((pdfPage: PDFPageProxy) => {
         this.onPdfPage(pdfPage)
-        this.renderPdfPage(pdfPage)
+        this.renderPdfPage(pdfPage, pdfCanvas)
       })
     })
   }
@@ -33,18 +40,17 @@ class BasicCanvasViewer {
   // PRIVATE METHODS.
   //-----------------------------------------------------------------------------------------------
 
-  private renderPdfPage(pdfPage: PDFPageProxy) {
-    var viewport = pdfPage.getViewport(this.pdfPageScale)
-    var canvas = <HTMLCanvasElement> document.getElementById(this.canvasElementId)
-    canvas.width = viewport.width
-    canvas.height = viewport.height
+  private renderPdfPage(pdfPage: PDFPageProxy, pdfCanvas: HTMLCanvasElement) {
+    var pdfPageViewport = pdfPage.getViewport(this.pdfPageScale)
+    pdfCanvas.width = pdfPageViewport.width
+    pdfCanvas.height = pdfPageViewport.height
 
-    var context = canvas.getContext("2d")
-    context.clearRect(0, 0, canvas.width, canvas.height)
+    var pdfCanvasContext = pdfCanvas.getContext("2d")
+    pdfCanvasContext.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height)
 
     var renderContext = {
-      canvasContext: context,
-      viewport: viewport
+      canvasContext: pdfCanvasContext,
+      viewport: pdfPageViewport
     }
     pdfPage.render(renderContext)
   }
@@ -53,11 +59,11 @@ class BasicCanvasViewer {
     console.log("pdfProgressData:", JSON.stringify(pdfProgressData))
   }
 
-  private onPdfDocument(pdfDocument) {
+  private onPdfDocument(pdfDocument: PDFDocumentProxy) {
     console.log("pdfDocument.numPages:", pdfDocument.numPages)
   }
 
-  private onPdfPage(pdfPage) {
+  private onPdfPage(pdfPage: PDFPageProxy) {
     console.log("pdfPage.ref:", JSON.stringify(pdfPage.ref))
   }
 

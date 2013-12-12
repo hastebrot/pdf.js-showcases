@@ -7,13 +7,19 @@ var BasicCanvasViewer = (function () {
     //-----------------------------------------------------------------------------------------------
     BasicCanvasViewer.prototype.loadAndRender = function () {
         var _this = this;
+        //PDFJS.disableWorker = false
+        //PDFJS.disableAutoFetch = true
+        //PDFJS.disableRange = true
+        var pdfCanvas = document.getElementById(this.canvasElementId);
+
         var promise = PDFJS.getDocument({ url: this.pdfDocumentPath }, null, null, this.onPdfDocumentProgress);
         promise.then(function (pdfDocument) {
             _this.onPdfDocument(pdfDocument);
+
             var promise = pdfDocument.getPage(_this.pdfPageNumber);
             promise.then(function (pdfPage) {
                 _this.onPdfPage(pdfPage);
-                _this.renderPdfPage(pdfPage);
+                _this.renderPdfPage(pdfPage, pdfCanvas);
             });
         });
     };
@@ -21,18 +27,17 @@ var BasicCanvasViewer = (function () {
     //-----------------------------------------------------------------------------------------------
     // PRIVATE METHODS.
     //-----------------------------------------------------------------------------------------------
-    BasicCanvasViewer.prototype.renderPdfPage = function (pdfPage) {
-        var viewport = pdfPage.getViewport(this.pdfPageScale);
-        var canvas = document.getElementById(this.canvasElementId);
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+    BasicCanvasViewer.prototype.renderPdfPage = function (pdfPage, pdfCanvas) {
+        var pdfPageViewport = pdfPage.getViewport(this.pdfPageScale);
+        pdfCanvas.width = pdfPageViewport.width;
+        pdfCanvas.height = pdfPageViewport.height;
 
-        var context = canvas.getContext("2d");
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        var pdfCanvasContext = pdfCanvas.getContext("2d");
+        pdfCanvasContext.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
 
         var renderContext = {
-            canvasContext: context,
-            viewport: viewport
+            canvasContext: pdfCanvasContext,
+            viewport: pdfPageViewport
         };
         pdfPage.render(renderContext);
     };
