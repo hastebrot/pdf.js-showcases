@@ -1,0 +1,18 @@
+#pdf-physical-structure pre {
+  border: 3px solid gray;
+  border-radius: 10px;
+  padding: 10px;
+  font-family: consolas, monospace;
+}
+
+.header {
+  border-color: red !important;
+}
+
+.object {
+  border-color: blue !important;
+}
+
+.xref {
+  border-color: green !important;
+}
